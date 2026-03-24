@@ -111,7 +111,8 @@ function extractText(data) {
 
 function safeParseJson(value) {
   try {
-    return JSON.parse(value)
+    const cleaned = value.replace(/```(?:json)?\s*/g, '').trim()
+    return JSON.parse(cleaned)
   } catch {
     return null
   }
