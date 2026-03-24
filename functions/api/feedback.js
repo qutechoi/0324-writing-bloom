@@ -1,4 +1,4 @@
-const DEFAULT_MODEL = 'claude-3-5-haiku-latest'
+const DEFAULT_MODEL = 'claude-3-5-haiku-20241022'
 
 export async function onRequest(context) {
   const { request } = context
