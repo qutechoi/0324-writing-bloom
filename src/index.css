@@ -1,0 +1,91 @@
+:root {
+  font-family:
+    'Pretendard', 'Inter', 'Noto Sans KR', -apple-system, BlinkMacSystemFont,
+    'Segoe UI', sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  color: #554b69;
+  background:
+    radial-gradient(circle at top, rgba(255, 231, 244, 0.75), transparent 38%),
+    radial-gradient(circle at right, rgba(214, 230, 255, 0.85), transparent 28%),
+    linear-gradient(180deg, #fff9fb 0%, #f6f4ff 46%, #f9fbff 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.9) 0 2px, transparent 3px),
+    radial-gradient(circle at 80% 30%, rgba(255, 255, 255, 0.8) 0 1.6px, transparent 3px),
+    radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.65) 0 2px, transparent 3px);
+  opacity: 0.6;
+}
+
+button,
+input,
+textarea {
+  font: inherit;
+}
+
+button {
+  -webkit-tap-highlight-color: transparent;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+h1,
+h2,
+h3 {
+  color: #312847;
+  letter-spacing: -0.03em;
+}
+
+h1 {
+  font-size: clamp(2.4rem, 5vw, 4.7rem);
+  line-height: 1.04;
+}
+
+h2 {
+  font-size: clamp(1.35rem, 3vw, 1.9rem);
+}
+
+h3 {
+  font-size: 1.08rem;
+}
+
+p {
+  line-height: 1.7;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+a {
+  color: inherit;
+}
