@@ -59,10 +59,12 @@ Pages 환경 변수:
 
 ## API routes
 
-- `POST /api/prompt` : 랜덤 글감 생성
-- `POST /api/feedback` : 작성글 피드백 생성
+- `GET /api/health` : Functions 라우팅 확인용
+- `GET|POST /api/prompt` : 랜덤 글감 생성
+- `GET|POST /api/feedback` : 작성글 피드백 생성
 
 두 API는 모두 Cloudflare Pages Functions에서 동작하므로 브라우저에 API 키가 노출되지 않습니다.
+배포 후 먼저 `/api/health` 에 접속해서 Functions가 잡히는지 확인할 수 있습니다.
 
 ## Notes
 

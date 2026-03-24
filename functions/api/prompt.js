@@ -1,15 +1,36 @@
 const DEFAULT_MODEL = 'claude-3-5-haiku-latest'
 
-export async function onRequestPost(context) {
+export async function onRequest(context) {
+  const { request } = context
+
+  if (request.method === 'OPTIONS') {
+    return jsonResponse({ ok: true })
+  }
+
+  if (request.method === 'GET') {
+    return jsonResponse({
+      ok: true,
+      route: '/api/prompt',
+      message: 'POST로 unit(sentence|paragraph)을 보내면 Claude가 글감을 생성합니다.',
+    })
+  }
+
+  if (request.method !== 'POST') {
+    return jsonResponse({ error: 'Method not allowed' }, 405)
+  }
+
   try {
-    const { request, env } = context
+    const { env } = context
     const body = await request.json().catch(() => ({}))
     const unit = body?.unit === 'sentence' ? 'sentence' : 'paragraph'
 
     if (!env.ANTHROPIC_API_KEY) {
-      return jsonResponse({
-        error: 'ANTHROPIC_API_KEY가 설정되지 않았어요. Cloudflare Pages 환경 변수를 확인해주세요.',
-      }, 500)
+      return jsonResponse(
+        {
+          error: 'ANTHROPIC_API_KEY가 설정되지 않았어요. Cloudflare Pages 환경 변수를 확인해주세요.',
+        },
+        500,
+      )
     }
 
     const model = env.CLAUDE_MODEL || DEFAULT_MODEL
@@ -39,20 +60,28 @@ export async function onRequestPost(context) {
     const data = await response.json()
 
     if (!response.ok) {
-      return jsonResponse({ error: data?.error?.message || 'Claude가 글감을 생성하지 못했어요.' }, response.status)
+      return jsonResponse(
+        { error: data?.error?.message || 'Claude가 글감을 생성하지 못했어요.' },
+        response.status,
+      )
     }
 
     const text = extractText(data)
     const parsed = safeParseJson(text)
 
-    return jsonResponse({ prompt: parsed?.prompt || '낯선 도시에서 오늘 하루만 이름을 바꿔 살게 된다면?' })
+    return jsonResponse({
+      prompt: parsed?.prompt || '낯선 도시에서 오늘 하루만 이름을 바꿔 살게 된다면?',
+    })
   } catch (error) {
     return jsonResponse({ error: error.message || '글감 생성 중 오류가 발생했어요.' }, 500)
   }
 }
 
 function extractText(data) {
-  return data?.content?.filter((item) => item.type === 'text').map((item) => item.text).join('\n') || ''
+  return data?.content
+    ?.filter((item) => item.type === 'text')
+    .map((item) => item.text)
+    .join('\n') || ''
 }
 
 function safeParseJson(value) {
@@ -69,6 +98,9 @@ function jsonResponse(body, status = 200) {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET,POST,OPTIONS',
+      'access-control-allow-headers': 'Content-Type',
     },
   })
 }

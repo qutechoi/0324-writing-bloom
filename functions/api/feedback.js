@@ -1,8 +1,26 @@
 const DEFAULT_MODEL = 'claude-3-5-haiku-latest'
 
-export async function onRequestPost(context) {
+export async function onRequest(context) {
+  const { request } = context
+
+  if (request.method === 'OPTIONS') {
+    return jsonResponse({ ok: true })
+  }
+
+  if (request.method === 'GET') {
+    return jsonResponse({
+      ok: true,
+      route: '/api/feedback',
+      message: 'POST로 topic, unit, writing을 보내면 Claude 피드백을 반환합니다.',
+    })
+  }
+
+  if (request.method !== 'POST') {
+    return jsonResponse({ error: 'Method not allowed' }, 405)
+  }
+
   try {
-    const { request, env } = context
+    const { env } = context
     const body = await request.json().catch(() => ({}))
     const topic = body?.topic?.trim()
     const unit = body?.unit === 'sentence' ? 'sentence' : 'paragraph'
@@ -13,9 +31,12 @@ export async function onRequestPost(context) {
     }
 
     if (!env.ANTHROPIC_API_KEY) {
-      return jsonResponse({
-        error: 'ANTHROPIC_API_KEY가 설정되지 않았어요. Cloudflare Pages 환경 변수를 확인해주세요.',
-      }, 500)
+      return jsonResponse(
+        {
+          error: 'ANTHROPIC_API_KEY가 설정되지 않았어요. Cloudflare Pages 환경 변수를 확인해주세요.',
+        },
+        500,
+      )
     }
 
     const model = env.CLAUDE_MODEL || DEFAULT_MODEL
@@ -50,7 +71,10 @@ export async function onRequestPost(context) {
     const data = await response.json()
 
     if (!response.ok) {
-      return jsonResponse({ error: data?.error?.message || 'Claude가 피드백을 생성하지 못했어요.' }, response.status)
+      return jsonResponse(
+        { error: data?.error?.message || 'Claude가 피드백을 생성하지 못했어요.' },
+        response.status,
+      )
     }
 
     const text = extractText(data)
@@ -61,10 +85,17 @@ export async function onRequestPost(context) {
     }
 
     return jsonResponse({
-      overall: parsed.overall || '짧지만 중심이 느껴지는 글이에요. 이미지와 감정을 조금 더 또렷하게 붙이면 더 좋아져요.',
-      strengths: Array.isArray(parsed.strengths) ? parsed.strengths.slice(0, 2) : ['주제 의식이 분명해요.', '문장 흐름이 자연스러워요.'],
-      improvements: Array.isArray(parsed.improvements) ? parsed.improvements.slice(0, 2) : ['이미지를 조금 더 구체화해보세요.', '핵심 감정을 한 번 더 선명하게 표현해보세요.'],
-      nextPrompt: parsed.nextPrompt || '같은 장면을 이번에는 냄새와 소리 중심으로 다시 써보세요.',
+      overall:
+        parsed.overall ||
+        '짧지만 중심이 느껴지는 글이에요. 이미지와 감정을 조금 더 또렷하게 붙이면 더 좋아져요.',
+      strengths: Array.isArray(parsed.strengths)
+        ? parsed.strengths.slice(0, 2)
+        : ['주제 의식이 분명해요.', '문장 흐름이 자연스러워요.'],
+      improvements: Array.isArray(parsed.improvements)
+        ? parsed.improvements.slice(0, 2)
+        : ['이미지를 조금 더 구체화해보세요.', '핵심 감정을 한 번 더 선명하게 표현해보세요.'],
+      nextPrompt:
+        parsed.nextPrompt || '같은 장면을 이번에는 냄새와 소리 중심으로 다시 써보세요.',
     })
   } catch (error) {
     return jsonResponse({ error: error.message || '피드백 생성 중 오류가 발생했어요.' }, 500)
@@ -72,7 +103,10 @@ export async function onRequestPost(context) {
 }
 
 function extractText(data) {
-  return data?.content?.filter((item) => item.type === 'text').map((item) => item.text).join('\n') || ''
+  return data?.content
+    ?.filter((item) => item.type === 'text')
+    .map((item) => item.text)
+    .join('\n') || ''
 }
 
 function safeParseJson(value) {
@@ -89,6 +123,9 @@ function jsonResponse(body, status = 200) {
     headers: {
       'content-type': 'application/json; charset=utf-8',
       'cache-control': 'no-store',
+      'access-control-allow-origin': '*',
+      'access-control-allow-methods': 'GET,POST,OPTIONS',
+      'access-control-allow-headers': 'Content-Type',
     },
   })
 }
